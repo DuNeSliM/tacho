@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pi Dash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="ambient"></div>
+    <main class="dash">
+        <header class="topbar reveal">
+            <div>
+                <p class="kicker">Raspberry OBD Gateway</p>
+                <h1>Digitales Armaturenbrett</h1>
+            </div>
+            <div class="status-group">
+                <span id="connection-pill" class="pill offline">Offline</span>
+                <span id="updated-at" class="updated">Kein Datensignal</span>
+            </div>
+        </header>
+
+        <section class="hero-grid">
+            <article class="panel speed reveal d1">
+                <p class="label">Geschwindigkeit</p>
+                <p class="speed-line"><span id="speed-value">--</span><span class="unit">km/h</span></p>
+                <div class="track">
+                    <div id="speed-bar" class="bar speed-bar"></div>
+                </div>
+            </article>
+
+            <article class="panel highlight reveal d2">
+                <p class="label">Drehzahl</p>
+                <p class="value-line"><span id="rpm-value">--</span><span class="unit">rpm</span></p>
+                <div class="track">
+                    <div id="rpm-bar" class="bar"></div>
+                </div>
+            </article>
+        </section>
+
+        <section class="metric-grid">
+            <article class="panel metric reveal d3">
+                <p class="label">Kuehlmittel</p>
+                <p class="value-line"><span id="coolant-value">--</span><span class="unit">degC</span></p>
+                <div class="track"><div id="coolant-bar" class="bar"></div></div>
+            </article>
+
+            <article class="panel metric reveal d4">
+                <p class="label">Ansaugluft</p>
+                <p class="value-line"><span id="intake-value">--</span><span class="unit">degC</span></p>
+                <div class="track"><div id="intake-bar" class="bar"></div></div>
+            </article>
+
+            <article class="panel metric reveal d5">
+                <p class="label">Throttle</p>
+                <p class="value-line"><span id="throttle-value">--</span><span class="unit">%</span></p>
+                <div class="track"><div id="throttle-bar" class="bar"></div></div>
+            </article>
+
+            <article class="panel metric reveal d6">
+                <p class="label">Motorlast</p>
+                <p class="value-line"><span id="load-value">--</span><span class="unit">%</span></p>
+                <div class="track"><div id="load-bar" class="bar"></div></div>
+            </article>
+
+            <article class="panel metric reveal d7">
+                <p class="label">Kraftstoff</p>
+                <p class="value-line"><span id="fuel-value">--</span><span class="unit">%</span></p>
+                <div class="track"><div id="fuel-bar" class="bar"></div></div>
+            </article>
+
+            <article class="panel metric reveal d8">
+                <p class="label">Batterie</p>
+                <p class="value-line"><span id="battery-value">--</span><span class="unit">V</span></p>
+                <div class="track"><div id="battery-bar" class="bar"></div></div>
+            </article>
+        </section>
+
+        <footer class="panel footer reveal d9">
+            <span id="adapter-info">Adapter: -</span>
+            <span id="error-info">Status: wartet auf OBD Daten</span>
+        </footer>
+    </main>
+    <script src="/static/app.js" defer></script>
+</body>
+</html>
+

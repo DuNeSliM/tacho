@@ -1,0 +1,22 @@
+[Unit]
+Description=Pi Dashboard Kiosk Screen
+After=pidash.service
+Requires=pidash.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/tacho
+Environment=DASH_URL=http://127.0.0.1:8080
+ExecStart=/home/pi/tacho/scripts/start-kiosk.sh
+Restart=always
+RestartSec=2
+StandardInput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+
+[Install]
+WantedBy=multi-user.target
+

@@ -33,5 +33,5 @@ exec xinit "$BROWSER_BIN" \
     --disable-features=TranslateUI \
     --window-size=1280,720 \
     --window-position=0,0 \
-    -- :0 -nocursor
+    -- :0 vt1 -nocursor
 

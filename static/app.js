@@ -57,15 +57,15 @@ function setBar(element, value, max) {
 
 function formatTimestamp(isoValue) {
     if (!isoValue) {
-        return "Kein Datensignal";
+        return "No data yet";
     }
 
     const parsed = new Date(isoValue);
     if (Number.isNaN(parsed.getTime())) {
-        return "Kein Datensignal";
+        return "No data yet";
     }
 
-    const local = parsed.toLocaleTimeString("de-DE", { hour12: false });
+    const local = parsed.toLocaleTimeString([], { hour12: false });
     return `Update ${local}`;
 }
 
@@ -92,8 +92,8 @@ function renderSnapshot(snapshot) {
     const adapter = snapshot.adapter || {};
     view.adapterInfo.textContent = `Adapter: ${adapter.host || "-"}:${adapter.port || "-"}`;
     view.errorInfo.textContent = snapshot.last_error
-        ? `Fehler: ${snapshot.last_error}`
-        : "Status: Datenstrom aktiv";
+        ? `Error: ${snapshot.last_error}`
+        : "Status: data stream active";
 
     view.speed.textContent = formatValue(metrics.speed_kmh, 0);
     view.rpm.textContent = formatValue(metrics.rpm, 0);
@@ -129,8 +129,8 @@ async function tick() {
         renderSnapshot(snapshot);
     } catch (error) {
         setConnectionState(false);
-        view.updatedAt.textContent = "Keine Verbindung zum Server";
-        view.errorInfo.textContent = `Fehler: ${error.message}`;
+        view.updatedAt.textContent = "No connection to server";
+        view.errorInfo.textContent = `Error: ${error.message}`;
     } finally {
         requestInFlight = false;
     }
@@ -138,4 +138,3 @@ async function tick() {
 
 tick();
 setInterval(tick, 450);
-

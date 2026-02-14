@@ -1,20 +1,28 @@
-# Pi Digitales Armaturenbrett (OBD2 WiFi)
+# Pi Digital Car Dashboard (OBD2 over WiFi)
 
-Dieses Projekt liest OBD2-Werte und zeigt sie als digitales Dashboard auf dem Pi-Bildschirm. Gleichzeitig stellt der Pi die Daten als Webseite fuer dein Handy bereit.
+This project reads OBD2 values from a WiFi ELM327 adapter and shows them on a custom dashboard.
 
-## Zielbild beim Einschalten
-- Auto bekommt Strom -> Raspberry Pi bootet.
-- `pidash` Backend startet automatisch.
-- Chromium Kiosk startet automatisch auf HDMI und zeigt `http://127.0.0.1:8080`.
-- Handy kann parallel dieselben Daten vom Pi holen.
+- The Raspberry Pi screen shows a fullscreen dashboard automatically at boot.
+- The same data is available on your smartphone from the Pi web server.
+- Works on Raspberry Pi OS Lite (32-bit) with Python.
 
-## Voraussetzungen
-- Raspberry Pi OS Lite (32-bit) empfohlen.
-- Python 3.10+.
-- OBD2 WiFi Adapter (ELM327 kompatibel).
-- Fuer OBD + Handy parallel: zweiter USB-WiFi Adapter empfohlen (siehe `docs/network_setup.md`).
+## How it works
 
-## Projektstruktur
+1. Pi connects to OBD adapter WiFi (`wlan0`).
+2. Python backend polls OBD2 PIDs over TCP (`app/telemetry.py`).
+3. Backend serves live state via HTTP API (`/api/state`).
+4. Dashboard web UI (local kiosk + phone browser) polls API and renders stats.
+
+## Recommended network topology
+
+Use two WiFi interfaces:
+
+- `wlan0`: OBD adapter connection.
+- `wlan1` (USB dongle): hotspot for your phone.
+
+See `docs/network_setup.md` for full setup.
+
+## Project structure
 
 ```text
 app/
@@ -35,16 +43,29 @@ docs/
 run.py
 ```
 
-## Schritt-fuer-Schritt auf einem neuen Pi
+## Install on Raspberry Pi
 
-1. Systempakete installieren:
+### One-command installer
+
+```bash
+cd /home/pi/tacho
+bash install.sh
+```
+
+This installs packages, creates `.venv`, installs Python deps, installs/enables `systemd` services, and starts the dashboard.
+
+You still need to verify `.env` (especially `OBD_HOST` and `OBD_PORT`).
+
+1. Install packages:
+
 ```bash
 sudo apt update
 sudo apt upgrade -y
 sudo apt install -y git python3-venv python3-pip curl xserver-xorg xinit openbox chromium || sudo apt install -y git python3-venv python3-pip curl xserver-xorg xinit openbox chromium-browser
 ```
 
-2. Projekt auf den Pi kopieren (am besten per `git clone` oder `scp`) und dann:
+2. Create virtual env and install Python deps:
+
 ```bash
 cd /home/pi/tacho
 python3 -m venv .venv
@@ -54,7 +75,8 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-3. `.env` bearbeiten:
+3. Edit `.env` values:
+
 ```env
 OBD_HOST=192.168.0.10
 OBD_PORT=35000
@@ -65,12 +87,14 @@ HTTP_PORT=8080
 SIMULATE=false
 ```
 
-4. Kiosk-Skript ausfuehrbar machen:
+4. Make kiosk script executable:
+
 ```bash
 chmod +x /home/pi/tacho/scripts/start-kiosk.sh
 ```
 
-5. Services installieren:
+5. Install systemd services:
+
 ```bash
 sudo cp /home/pi/tacho/systemd/pidash.service /etc/systemd/system/pidash.service
 sudo cp /home/pi/tacho/systemd/pidash-kiosk.service /etc/systemd/system/pidash-kiosk.service
@@ -79,40 +103,48 @@ sudo systemctl enable pidash pidash-kiosk
 sudo systemctl start pidash pidash-kiosk
 ```
 
-6. Status pruefen:
+6. Check service status:
+
 ```bash
 systemctl status pidash --no-pager
 systemctl status pidash-kiosk --no-pager
 ```
 
-7. Neustarttest:
-```bash
-sudo reboot
-```
-Nach dem Reboot sollte der Bildschirm automatisch das Dashboard zeigen.
+## Boot behavior in car
 
-## Test ohne Auto
+When the car powers the Pi:
 
-Setze in `.env`:
+1. Pi boots.
+2. `pidash` backend service starts.
+3. `pidash-kiosk` starts Chromium fullscreen on HDMI.
+4. Dashboard appears automatically.
+
+## Smartphone access
+
+- Same network: `http://<PI-IP>:8080`
+- Pi hotspot setup: `http://192.168.50.1:8080`
+
+## Testing without real car data
+
+Set in `.env`:
+
 ```env
 SIMULATE=true
 ```
-Dann:
+
+Restart services:
+
 ```bash
 sudo systemctl restart pidash pidash-kiosk
 ```
 
-## Handy-Zugriff
-- Im gleichen Netz: `http://<PI-IP>:8080`
-- Oder ueber Pi-Hotspot mit zweitem WLAN-Adapter: `http://192.168.50.1:8080`
+## Logs
 
-## Logs bei Fehlern
 ```bash
 journalctl -u pidash -f
 journalctl -u pidash-kiosk -f
 ```
 
-## Sicherheitshinweise
-- Nur als Zusatzanzeige verwenden.
-- Bedienung waehrend der Fahrt vermeiden.
-- Pi, Kabel und OBD Adapter sicher montieren.
+## Safety note
+
+Use this as an auxiliary display only. Mount hardware securely and avoid interacting with the dashboard while driving.

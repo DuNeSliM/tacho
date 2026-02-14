@@ -133,8 +133,7 @@ class ELM327Client:
         if self._writer is None:
             raise ConnectionError("OBD adapter socket is not connected.")
 
-        # Some adapters send an old prompt/buffer content right after connect.
-        # Two sync rounds clear stale bytes before normal commands start.
+        # Clear stale bytes/prompt before normal requests begin.
         for _ in range(2):
             self._writer.write(b"\r")
             await self._writer.drain()

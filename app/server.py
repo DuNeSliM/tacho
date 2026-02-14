@@ -59,4 +59,3 @@ async def shutdown_event() -> None:
         poller_task.cancel()
         with suppress(asyncio.CancelledError):
             await poller_task
-

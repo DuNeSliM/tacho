@@ -23,4 +23,3 @@ if __name__ == "__main__":
         port=settings.http_port,
         log_level="info",
     )
-

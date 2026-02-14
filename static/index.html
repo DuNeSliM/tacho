@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,17 +15,17 @@
         <header class="topbar reveal">
             <div>
                 <p class="kicker">Raspberry OBD Gateway</p>
-                <h1>Digitales Armaturenbrett</h1>
+                <h1>Digital Car Dashboard</h1>
             </div>
             <div class="status-group">
                 <span id="connection-pill" class="pill offline">Offline</span>
-                <span id="updated-at" class="updated">Kein Datensignal</span>
+                <span id="updated-at" class="updated">No data yet</span>
             </div>
         </header>
 
         <section class="hero-grid">
             <article class="panel speed reveal d1">
-                <p class="label">Geschwindigkeit</p>
+                <p class="label">Speed</p>
                 <p class="speed-line"><span id="speed-value">--</span><span class="unit">km/h</span></p>
                 <div class="track">
                     <div id="speed-bar" class="bar speed-bar"></div>
@@ -33,7 +33,7 @@
             </article>
 
             <article class="panel highlight reveal d2">
-                <p class="label">Drehzahl</p>
+                <p class="label">RPM</p>
                 <p class="value-line"><span id="rpm-value">--</span><span class="unit">rpm</span></p>
                 <div class="track">
                     <div id="rpm-bar" class="bar"></div>
@@ -43,13 +43,13 @@
 
         <section class="metric-grid">
             <article class="panel metric reveal d3">
-                <p class="label">Kuehlmittel</p>
+                <p class="label">Coolant</p>
                 <p class="value-line"><span id="coolant-value">--</span><span class="unit">degC</span></p>
                 <div class="track"><div id="coolant-bar" class="bar"></div></div>
             </article>
 
             <article class="panel metric reveal d4">
-                <p class="label">Ansaugluft</p>
+                <p class="label">Intake</p>
                 <p class="value-line"><span id="intake-value">--</span><span class="unit">degC</span></p>
                 <div class="track"><div id="intake-bar" class="bar"></div></div>
             </article>
@@ -61,19 +61,19 @@
             </article>
 
             <article class="panel metric reveal d6">
-                <p class="label">Motorlast</p>
+                <p class="label">Engine Load</p>
                 <p class="value-line"><span id="load-value">--</span><span class="unit">%</span></p>
                 <div class="track"><div id="load-bar" class="bar"></div></div>
             </article>
 
             <article class="panel metric reveal d7">
-                <p class="label">Kraftstoff</p>
+                <p class="label">Fuel</p>
                 <p class="value-line"><span id="fuel-value">--</span><span class="unit">%</span></p>
                 <div class="track"><div id="fuel-bar" class="bar"></div></div>
             </article>
 
             <article class="panel metric reveal d8">
-                <p class="label">Batterie</p>
+                <p class="label">Battery</p>
                 <p class="value-line"><span id="battery-value">--</span><span class="unit">V</span></p>
                 <div class="track"><div id="battery-bar" class="bar"></div></div>
             </article>
@@ -81,10 +81,9 @@
 
         <footer class="panel footer reveal d9">
             <span id="adapter-info">Adapter: -</span>
-            <span id="error-info">Status: wartet auf OBD Daten</span>
+            <span id="error-info">Status: waiting for OBD data</span>
         </footer>
     </main>
     <script src="/static/app.js" defer></script>
 </body>
 </html>
-

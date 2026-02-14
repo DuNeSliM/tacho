@@ -12,7 +12,7 @@ else
     exit 1
 fi
 
-# Wait until local API is reachable, then open the dashboard in kiosk mode.
+# Wait for API before opening the kiosk.
 for _ in $(seq 1 60); do
     if curl -fsS "http://127.0.0.1:8080/api/health" >/dev/null; then
         break
@@ -34,4 +34,3 @@ exec xinit "$BROWSER_BIN" \
     --window-size=1280,720 \
     --window-position=0,0 \
     -- :0 vt1 -nocursor
-

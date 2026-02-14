@@ -1,14 +1,16 @@
 [Unit]
 Description=Display Script
-DefaultDependencies=no
-After=local-fs.target
+After=multi-user.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /tacho/display.py
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/python3 -u /root/tacho/display.py
 Restart=always
 RestartSec=5
 User=root
+StandardOutput=journal
+StandardError=journal
 Environment=SDL_VIDEODRIVER=kmsdrm
 
 [Install]

@@ -331,12 +331,12 @@ def draw_gauge(surf, center, radius, value, max_val,
     # --- unit ---
     us = fonts["unit"].render(unit, True, GRAY)
     surf.blit(us, (center[0] - us.get_width() // 2,
-                   center[1] + vs.get_height() // 2 + 2))
+                   center[1] + vs.get_height() // 2 + 1))
 
     # --- label ---
     ls = fonts["label"].render(label, True, GRAY)
     surf.blit(ls, (center[0] - ls.get_width() // 2,
-                   center[1] + int(radius * 0.58)))
+                   center[1] + int(radius * 0.52)))
 
 
 def draw_info_box(surf, rect, value, label, unit, color, fonts,
@@ -350,7 +350,7 @@ def draw_info_box(surf, rect, value, label, unit, color, fonts,
 
     # label
     ls = fonts["ib_label"].render(label, True, GRAY)
-    surf.blit(ls, (x + w // 2 - ls.get_width() // 2, y + 6))
+    surf.blit(ls, (x + w // 2 - ls.get_width() // 2, y + 5))
 
     # value color
     vc = color
@@ -361,11 +361,11 @@ def draw_info_box(surf, rect, value, label, unit, color, fonts,
     # value text
     fmt = f"{value:.1f}" if isinstance(value, float) and value < 100 else f"{int(value)}"
     vs = fonts["ib_val"].render(f"{fmt}{unit}", True, vc)
-    surf.blit(vs, (x + w // 2 - vs.get_width() // 2, y + 28))
+    surf.blit(vs, (x + w // 2 - vs.get_width() // 2, y + 24))
 
     # bar
     if max_val and max_val > 0:
-        bx, by, bw, bh = x + 10, y + h - 18, w - 20, 7
+        bx, by, bw, bh = x + 8, y + h - 16, w - 16, 6
         pygame.draw.rect(surf, DARK_GRAY, (bx, by, bw, bh), border_radius=3)
         fw = int(bw * max(0, min(1, value / max_val)))
         if fw > 0:
@@ -384,17 +384,17 @@ def main():
 
     clock = pygame.time.Clock()
 
-    # Font sizes scaled to screen
-    s = H / 720.0
+    # Font sizes tuned for 1024x600
+    s = H / 600.0
     fonts = {
-        "big":      pygame.font.SysFont("monospace", int(60 * s), bold=True),
-        "unit":     pygame.font.SysFont("monospace", int(20 * s)),
-        "label":    pygame.font.SysFont("monospace", int(20 * s), bold=True),
-        "tick":     pygame.font.SysFont("monospace", int(13 * s)),
-        "ib_label": pygame.font.SysFont("monospace", int(15 * s)),
-        "ib_val":   pygame.font.SysFont("monospace", int(26 * s), bold=True),
-        "status":   pygame.font.SysFont("monospace", int(15 * s)),
-        "header":   pygame.font.SysFont("monospace", int(16 * s), bold=True),
+        "big":      pygame.font.SysFont("monospace", int(44 * s), bold=True),
+        "unit":     pygame.font.SysFont("monospace", int(15 * s)),
+        "label":    pygame.font.SysFont("monospace", int(15 * s), bold=True),
+        "tick":     pygame.font.SysFont("monospace", int(11 * s)),
+        "ib_label": pygame.font.SysFont("monospace", int(12 * s)),
+        "ib_val":   pygame.font.SysFont("monospace", int(20 * s), bold=True),
+        "status":   pygame.font.SysFont("monospace", int(12 * s)),
+        "header":   pygame.font.SysFont("monospace", int(13 * s), bold=True),
     }
 
     # --- OBD connection ---
@@ -404,19 +404,20 @@ def main():
         obd = OBDConnection(OBD_IP, OBD_PORT)
         threading.Thread(target=obd.poll_loop, daemon=True).start()
 
-    # --- layout ---
-    gauge_r  = int(min(W * 0.20, H * 0.36))
-    rpm_cx   = int(W * 0.27)
-    speed_cx = int(W * 0.73)
-    gauge_cy = int(H * 0.42)
+    # --- layout tuned for 1024x600 ---
+    gauge_r  = int(min(W * 0.19, H * 0.34))
+    rpm_cx   = int(W * 0.25)
+    speed_cx = int(W * 0.75)
+    gauge_cy = int(H * 0.38)
 
     # info boxes
     box_labels = ["COOLANT", "INTAKE", "THROTTLE", "LOAD", "FUEL"]
     n_boxes = len(box_labels)
-    box_w = int(W * 0.155)
-    box_h = int(H * 0.13)
-    box_gap = int((W - n_boxes * box_w) / (n_boxes + 1))
-    box_y = int(H * 0.83)
+    box_w = int(W * 0.17)
+    box_h = int(H * 0.15)
+    total_w = n_boxes * box_w
+    box_gap = int((W - total_w) / (n_boxes + 1))
+    box_y = int(H * 0.82)
 
     running = True
     while running:

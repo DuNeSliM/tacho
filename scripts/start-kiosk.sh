@@ -20,10 +20,11 @@ for _ in $(seq 1 60); do
     sleep 1
 done
 
-exec xinit "$BROWSER_BIN" \
+exec dbus-run-session xinit "$BROWSER_BIN" \
     --kiosk "$URL" \
     --incognito \
     --noerrdialogs \
+    --no-first-run \
     --disable-translate \
     --disable-infobars \
     --check-for-update-interval=31536000 \
@@ -31,6 +32,9 @@ exec xinit "$BROWSER_BIN" \
     --overscroll-history-navigation=0 \
     --disable-session-crashed-bubble \
     --disable-features=TranslateUI \
+    --disable-gpu \
+    --disable-software-rasterizer \
+    --disable-gpu-compositing \
     --window-size=1280,720 \
     --window-position=0,0 \
     -- :0 vt1 -nocursor

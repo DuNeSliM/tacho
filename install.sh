@@ -34,7 +34,7 @@ as_root() {
 
 echo "[1/7] Installing OS packages..."
 as_root apt-get update
-as_root apt-get install -y git python3-venv python3-pip curl xserver-xorg xinit openbox
+as_root apt-get install -y git python3-venv python3-pip curl xserver-xorg xinit openbox dbus-x11
 if ! as_root apt-get install -y chromium; then
     as_root apt-get install -y chromium-browser
 fi

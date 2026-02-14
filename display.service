@@ -5,7 +5,7 @@ After=multi-user.target
 [Service]
 Type=simple
 ExecStartPre=/bin/sleep 5
-ExecStart=/usr/bin/python3 -u /root/tacho/display.py
+ExecStart=/usr/bin/python3 -u /tacho/display.py
 Restart=always
 RestartSec=5
 User=root

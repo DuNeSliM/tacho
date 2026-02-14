@@ -1,0 +1,15 @@
+[Unit]
+Description=Display Script
+DefaultDependencies=no
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/pi/display.py
+Restart=always
+RestartSec=5
+User=root
+Environment=SDL_VIDEODRIVER=kmsdrm
+
+[Install]
+WantedBy=multi-user.target

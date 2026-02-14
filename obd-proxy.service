@@ -1,0 +1,17 @@
+[Unit]
+Description=OBD-II ELM327 WiFi Proxy
+After=multi-user.target hostapd.service uap0.service
+Wants=uap0.service hostapd.service dnsmasq.service
+
+[Service]
+Type=simple
+ExecStartPre=/bin/sleep 8
+ExecStart=/usr/bin/python3 -u /home/pi/tacho/obd_proxy.py
+Restart=always
+RestartSec=5
+User=root
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

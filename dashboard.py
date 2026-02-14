@@ -26,8 +26,8 @@ os.environ["SDL_VIDEODRIVER"] = "kmsdrm"
 import pygame
 
 # ===================== CONFIGURATION =====================
-OBD_IP       = "192.168.0.10"    # Your OBD adapter's IP
-OBD_PORT     = 35000             # Your OBD adapter's port
+OBD_IP       = "127.0.0.1"       # Connect via local proxy (obd_proxy.py)
+OBD_PORT     = 35000             # Proxy port
 DEMO_MODE    = True              # True = fake data (test without car)
 MAX_RPM      = 8000              # Max RPM on tachometer
 MAX_SPEED    = 260               # Max speed (km/h) on speedometer

@@ -38,6 +38,8 @@ COL_GREEN = (70, 225, 120)
 COL_YELLOW = (255, 211, 78)
 COL_RED = (255, 76, 76)
 COL_ORANGE = (255, 143, 65)
+COL_BLUE_HI = (130, 170, 235)
+COL_GREEN_BAND = (120, 145, 38)
 
 
 def clamp(value, low, high):
@@ -253,171 +255,198 @@ def format_num(value, decimals=1):
     return f"{value:.{decimals}f}"
 
 
-def draw_value_tile(surface, rect, title, value, unit, fonts, accent=COL_CYAN, decimals=1):
-    draw_panel(surface, rect, border_color=(59, 86, 124), fill_color=(20, 30, 46), radius=7)
-    header_h = max(14, int(rect.height * 0.24))
-    pygame.draw.rect(
-        surface,
-        (29, 42, 64),
-        (rect.x + 1, rect.y + 1, rect.width - 2, header_h),
-        border_top_left_radius=7,
-        border_top_right_radius=7,
-    )
+def draw_top_tile(surface, rect, title, value, unit, fonts, accent=COL_CYAN, decimals=1):
+    draw_panel(surface, rect, border_color=(63, 90, 132), fill_color=(20, 31, 48), radius=4)
+    header_h = max(12, int(rect.height * 0.30))
+    pygame.draw.rect(surface, (31, 45, 68), (rect.x + 1, rect.y + 1, rect.width - 2, header_h))
     pygame.draw.rect(surface, accent, (rect.x + 1, rect.y + header_h - 1, rect.width - 2, 2))
+    draw_text_center(surface, fonts["tile_label"], title, COL_SUB, rect.centerx, rect.y + header_h * 0.50)
+    draw_text_center(surface, fonts["tile_value"], format_num(value, decimals), accent, rect.centerx, rect.centery + rect.height * 0.05)
+    draw_text_center(surface, fonts["tile_unit"], unit, COL_SUB, rect.centerx, rect.bottom - rect.height * 0.16)
 
-    draw_text_center(surface, fonts["tile_label"], title, COL_SUB, rect.centerx, rect.y + header_h * 0.53)
 
-    value_str = format_num(value, decimals=decimals)
-    draw_text_center(surface, fonts["tile_value"], value_str, accent, rect.centerx, rect.centery + rect.height * 0.02)
-    draw_text_center(surface, fonts["tile_unit"], unit, COL_SUB, rect.centerx, rect.bottom - rect.height * 0.15)
+def draw_rpm_band(surface, rect, rpm, fonts):
+    draw_panel(surface, rect, border_color=(78, 109, 65), fill_color=(42, 58, 23), radius=2)
+    segs = 8
+    inner = rect.inflate(-2, -2)
+    fill_frac = clamp(rpm / float(MAX_RPM), 0.0, 1.0)
+    active = int(fill_frac * segs + 0.0001)
+    for i in range(segs):
+        x = inner.x + i * inner.width / segs
+        w = inner.width / segs
+        cell = pygame.Rect(int(x), inner.y, int(w) - 1, inner.height)
+        if i < active:
+            cell_col = lerp_color((123, 152, 44), (192, 88, 45), i / max(1, segs - 1))
+        else:
+            cell_col = (65, 86, 41)
+        pygame.draw.rect(surface, cell_col, cell)
+        draw_text_center(surface, fonts["tick"], str(i + 1), COL_TEXT, cell.centerx, cell.centery)
+        pygame.draw.line(surface, (92, 118, 60), (cell.right, inner.y), (cell.right, inner.bottom), 1)
 
 
 def draw_left_ramp(surface, rect, rpm, map_kpa, boost_psi, fonts):
-    draw_panel(surface, rect, border_color=(76, 106, 151), fill_color=(17, 27, 40), radius=7)
-
-    title_rect = pygame.Rect(rect.x + 1, rect.y + 1, rect.width - 2, max(16, int(rect.height * 0.16)))
-    pygame.draw.rect(surface, (30, 43, 64), title_rect, border_top_left_radius=7, border_top_right_radius=7)
-    draw_text_center(surface, fonts["box_label"], "BOOST RAMP", COL_SUB, title_rect.centerx, title_rect.centery)
-
-    pad = max(8, int(rect.height * 0.10))
-    inner = pygame.Rect(rect.x + pad, rect.y + title_rect.height + 4, rect.width - pad * 2, rect.height - title_rect.height - pad - 4)
-
-    lx = inner.left + 2
-    rx = inner.right - 2
+    draw_panel(surface, rect, border_color=(85, 116, 165), fill_color=(17, 27, 42), radius=4)
+    inner = rect.inflate(-8, -8)
+    lx = inner.left
+    rx = inner.right
     top_l = inner.top + int(inner.height * 0.42)
-    top_r = inner.top + int(inner.height * 0.08)
+    top_r = inner.top + int(inner.height * 0.05)
     bot_l = inner.bottom - int(inner.height * 0.05)
-    bot_r = inner.bottom - int(inner.height * 0.30)
+    bot_r = inner.bottom - int(inner.height * 0.33)
 
     def y_top(x):
-        t = (x - lx) / float(max(1, rx - lx))
-        return top_l + (top_r - top_l) * t
+        return top_l + (top_r - top_l) * ((x - lx) / max(1.0, float(rx - lx)))
 
     def y_bot(x):
-        t = (x - lx) / float(max(1, rx - lx))
-        return bot_l + (bot_r - bot_l) * t
+        return bot_l + (bot_r - bot_l) * ((x - lx) / max(1.0, float(rx - lx)))
 
-    base_poly = [(lx, bot_l), (lx, top_l), (rx, top_r), (rx, bot_r)]
-    pygame.draw.polygon(surface, (26, 41, 59), base_poly)
-    pygame.draw.polygon(surface, (80, 117, 166), base_poly, width=2)
+    poly = [(lx, bot_l), (lx, top_l), (rx, top_r), (rx, bot_r)]
+    pygame.draw.polygon(surface, (31, 45, 66), poly)
+    pygame.draw.polygon(surface, COL_BLUE_HI, poly, 2)
 
-    # grid slices and labels
-    steps = 8
-    for i in range(1, steps):
-        x = lx + (rx - lx) * i / steps
+    # section lines and labels
+    sections = 8
+    for i in range(1, sections):
+        x = lx + (rx - lx) * i / sections
         yt = y_top(x)
         yb = y_bot(x)
-        pygame.draw.line(surface, COL_GRID, (x, yt), (x, yb), 1)
-        draw_text_center(surface, fonts["tick"], str(i), COL_SUB, x, yt - 9)
+        pygame.draw.line(surface, (56, 83, 120), (x, yt), (x, yb), 1)
+        draw_text_center(surface, fonts["tick"], str(i), COL_SUB, x, yt - 10)
 
+    # highlight fill from left based on rpm
     frac = clamp(rpm / float(MAX_RPM), 0.0, 1.0)
     px = lx + (rx - lx) * frac
-    prog_poly = [(lx, bot_l), (lx, top_l), (px, y_top(px)), (px, y_bot(px))]
-    pygame.draw.polygon(surface, (58, 84, 122), prog_poly)
+    poly_fill = [(lx, bot_l), (lx, top_l), (px, y_top(px)), (px, y_bot(px))]
+    pygame.draw.polygon(surface, (88, 118, 161), poly_fill)
     pygame.draw.line(surface, COL_CYAN, (px, y_top(px)), (px, y_bot(px)), 2)
 
-    # red marker on lower-left like reference
-    pygame.draw.circle(surface, COL_RED, (int(lx), int(bot_l)), 4)
+    # center guide line like reference
+    pygame.draw.line(surface, (210, 230, 255), (lx + 4, bot_l - 10), (rx - 2, top_r + 8), 2)
+    pygame.draw.circle(surface, COL_RED, (int(lx + 1), int(bot_l)), 4)
 
-    draw_text_center(surface, fonts["ramp_value"], format_num(boost_psi, 1), COL_ORANGE, rect.centerx, rect.centery + 8)
-    draw_text_center(surface, fonts["box_label"], "Boost (psi)", COL_SUB, rect.centerx, rect.centery + 32)
-    draw_text_center(surface, fonts["small"], f"MAP {format_num(map_kpa, 1)} kPa", COL_CYAN, rect.centerx, rect.bottom - 14)
+    draw_text_center(surface, fonts["ramp_value"], format_num(boost_psi, 1), COL_ORANGE, rect.centerx, rect.bottom - 26)
+    draw_text_center(surface, fonts["box_label"], "Boost (psi)", COL_SUB, rect.centerx, rect.bottom - 12)
+    draw_text_center(surface, fonts["small"], f"MAP {format_num(map_kpa, 1)}", COL_CYAN, rect.right - 44, rect.top + 11)
 
 
-def draw_metric_card(surface, rect, label, value, unit, fonts, color, ratio):
-    draw_panel(surface, rect, border_color=(70, 95, 130), fill_color=(18, 28, 42), radius=6)
+def draw_data_box(surface, rect, label, value, unit, fonts, color, ratio=0.0, decimals=1, red_theme=False):
+    border = (126, 44, 44) if red_theme else (67, 94, 131)
+    fill = (70, 15, 15) if red_theme else (19, 29, 44)
+    head = (128, 31, 31) if red_theme else (29, 43, 65)
+    draw_panel(surface, rect, border_color=border, fill_color=fill, radius=4)
+    header_h = max(12, int(rect.height * 0.34))
+    pygame.draw.rect(surface, head, (rect.x + 1, rect.y + 1, rect.width - 2, header_h))
+    draw_text_center(surface, fonts["box_label"], label, COL_SUB if not red_theme else (245, 200, 200), rect.centerx, rect.y + header_h * 0.52)
+    draw_text_center(surface, fonts["box_value"], format_num(value, decimals), color, rect.centerx, rect.centery + rect.height * 0.03)
+    draw_text_center(surface, fonts["box_unit"], unit, COL_SUB if not red_theme else (255, 210, 210), rect.centerx, rect.bottom - rect.height * 0.18)
 
-    header_h = max(13, int(rect.height * 0.27))
-    pygame.draw.rect(
-        surface,
-        (27, 41, 62),
-        (rect.x + 1, rect.y + 1, rect.width - 2, header_h),
-        border_top_left_radius=6,
-        border_top_right_radius=6,
-    )
-    draw_text_center(surface, fonts["box_label"], label, COL_SUB, rect.centerx, rect.y + header_h * 0.52)
-
-    value_text = format_num(value, 2 if abs(value) < 20 else 1)
-    draw_text_center(surface, fonts["box_value"], value_text, color, rect.centerx, rect.centery + rect.height * 0.03)
-    draw_text_center(surface, fonts["box_unit"], unit, COL_SUB, rect.centerx, rect.bottom - rect.height * 0.19)
-
-    bx = rect.x + 8
-    by = rect.bottom - 8
-    bw = rect.width - 16
-    bh = 4
-    pygame.draw.rect(surface, (38, 56, 80), (bx, by, bw, bh), border_radius=2)
-    fill = int(bw * clamp(ratio, 0.0, 1.0))
-    if fill > 0:
-        pygame.draw.rect(surface, color, (bx, by, fill, bh), border_radius=2)
+    bx, by, bw, bh = rect.x + 8, rect.bottom - 8, rect.width - 16, 4
+    pygame.draw.rect(surface, (42, 59, 83), (bx, by, bw, bh))
+    fill_w = int(bw * clamp(ratio, 0.0, 1.0))
+    if fill_w > 0:
+        pygame.draw.rect(surface, color, (bx, by, fill_w, bh))
 
 
 def draw_dashboard(surface, data, connected, fonts, fps):
     width, height = surface.get_size()
     surface.fill(COL_BG)
 
-    # subtle scan lines
     line_step = max(6, int(height * 0.04))
     for y in range(0, height, line_step):
         pygame.draw.line(surface, COL_BG_2, (0, y), (width, y), 1)
 
-    pad = max(10, int(height * 0.04))
-    gap = max(8, int(height * 0.025))
-    top_h = int(height * 0.23)
-    body_h = height - (pad * 2) - top_h - gap
+    pad = max(8, int(height * 0.022))
+    gap = max(5, int(height * 0.015))
+    outer = pygame.Rect(pad, pad, width - pad * 2, height - pad * 2)
+    draw_panel(surface, outer, border_color=(54, 77, 110), fill_color=(11, 17, 28), radius=4)
 
-    top_rect = pygame.Rect(pad, pad, width - 2 * pad, top_h)
-    body_rect = pygame.Rect(pad, pad + top_h + gap, width - 2 * pad, body_h)
-
-    tile_gap = gap
-    tile_w = int((top_rect.width - tile_gap * 2) / 3)
-    tile_h = top_rect.height
-    tile1 = pygame.Rect(top_rect.x, top_rect.y, tile_w, tile_h)
-    tile2 = pygame.Rect(top_rect.x + tile_w + tile_gap, top_rect.y, tile_w, tile_h)
-    tile3 = pygame.Rect(top_rect.x + (tile_w + tile_gap) * 2, top_rect.y, tile_w, tile_h)
-
-    mph = data["speed_kmh"] * 0.621371
-    draw_value_tile(surface, tile1, "MAP", data["map_kpa"], "kPa", fonts, accent=COL_CYAN, decimals=1)
-    draw_value_tile(surface, tile2, "SPEED", mph, "MPH", fonts, accent=COL_CYAN, decimals=0)
-    draw_value_tile(surface, tile3, "RPM", data["rpm"], "rpm", fonts, accent=rpm_color(clamp(data["rpm"] / MAX_RPM, 0, 1)), decimals=0)
-
-    left_w = int(body_rect.width * 0.41)
-    left_rect = pygame.Rect(body_rect.x, body_rect.y, left_w, body_rect.height)
-    right_rect = pygame.Rect(body_rect.x + left_w + gap, body_rect.y, body_rect.width - left_w - gap, body_rect.height)
-
-    boost_psi = (data["map_kpa"] - 101.3) * 0.145038
-    draw_left_ramp(surface, left_rect, data["rpm"], data["map_kpa"], boost_psi, fonts)
-
-    cols, rows = 3, 2
-    card_gap = gap
-    card_w = int((right_rect.width - card_gap * (cols - 1)) / cols)
-    card_h = int((right_rect.height - card_gap * (rows - 1)) / rows)
-
-    cards = [
-        ("Injector Duty", data["engine_load"], "%", COL_RED, data["engine_load"] / 100.0),
-        ("Intake Air Temp", data["intake_temp"], "C", temp_color(data["intake_temp"]), data["intake_temp"] / 80.0),
-        ("Coolant Temp", data["coolant_temp"], "C", temp_color(data["coolant_temp"]), data["coolant_temp"] / 120.0),
-        ("Throttle", data["throttle"], "%", COL_CYAN, data["throttle"] / 100.0),
-        ("Boost Target", boost_psi, "psi", COL_CYAN, clamp((boost_psi + 10.0) / 25.0, 0, 1)),
-        ("Fuel Level", data["fuel_level"], "%", COL_GREEN if data["fuel_level"] > 20 else COL_RED, data["fuel_level"] / 100.0),
-    ]
-
-    idx = 0
-    for r in range(rows):
-        for c in range(cols):
-            card = pygame.Rect(
-                right_rect.x + c * (card_w + card_gap),
-                right_rect.y + r * (card_h + card_gap),
-                card_w,
-                card_h,
-            )
-            label, value, unit, color, ratio = cards[idx]
-            draw_metric_card(surface, card, label, value, unit, fonts, color, ratio)
-            idx += 1
+    # Header strip
+    header_h = int(outer.height * 0.075)
+    header = pygame.Rect(outer.x + 2, outer.y + 2, outer.width - 4, header_h)
+    pygame.draw.rect(surface, (22, 33, 52), header)
+    icon = pygame.Rect(header.x + 10, header.y + 6, header_h - 10, header_h - 10)
+    pygame.draw.rect(surface, (34, 50, 80), icon, border_radius=3)
+    pygame.draw.rect(surface, (78, 118, 184), icon, 1, border_radius=3)
+    pygame.draw.line(surface, (78, 118, 184), (icon.x + 5, icon.centery), (icon.right - 5, icon.centery), 2)
+    pygame.draw.line(surface, (78, 118, 184), (icon.centerx, icon.y + 5), (icon.centerx, icon.bottom - 5), 2)
 
     status = "DEMO" if DEMO_MODE else ("OBD ONLINE" if connected else "OBD OFFLINE")
     status_color = COL_YELLOW if DEMO_MODE else (COL_GREEN if connected else COL_RED)
-    draw_text_center(surface, fonts["small"], status, status_color, width - 90, 14)
-    draw_text_center(surface, fonts["small"], f"{width}x{height}  FPS {int(fps)}", COL_SUB, width - 88, 30)
+    draw_text_center(surface, fonts["small"], status, status_color, header.right - 70, header.centery - 1)
+    draw_text_center(surface, fonts["small"], f"{width}x{height}", COL_SUB, header.right - 12, header.centery - 1)
+
+    # Top metric row
+    row1_y = header.bottom + gap
+    row1_h = int(outer.height * 0.19)
+    row1 = pygame.Rect(outer.x + 2, row1_y, outer.width - 4, row1_h)
+    tile_gap = gap
+    tile_w = int((row1.width - tile_gap * 2) / 3)
+    tile1 = pygame.Rect(row1.x, row1.y, tile_w, row1.height)
+    tile2 = pygame.Rect(row1.x + tile_w + tile_gap, row1.y, tile_w, row1.height)
+    tile3 = pygame.Rect(row1.x + (tile_w + tile_gap) * 2, row1.y, tile_w, row1.height)
+    mph = data["speed_kmh"] * 0.621371
+    draw_top_tile(surface, tile1, "MAP", data["map_kpa"], "(kPa)", fonts, accent=COL_CYAN, decimals=1)
+    draw_top_tile(surface, tile2, "MPH", mph, "(MPH)", fonts, accent=COL_CYAN, decimals=0)
+    draw_top_tile(surface, tile3, "RPM", data["rpm"], "(RPM)", fonts, accent=rpm_color(clamp(data["rpm"] / MAX_RPM, 0, 1)), decimals=0)
+
+    # Segmented band
+    band_h = int(outer.height * 0.07)
+    band = pygame.Rect(outer.x + 2, row1.bottom + gap, outer.width - 4, band_h)
+    draw_rpm_band(surface, band, data["rpm"], fonts)
+
+    # Lower area
+    body = pygame.Rect(outer.x + 2, band.bottom + gap, outer.width - 4, outer.bottom - (band.bottom + gap) - 2)
+    left_w = int(body.width * 0.40)
+    left = pygame.Rect(body.x, body.y, left_w, body.height)
+    right = pygame.Rect(body.x + left_w + gap, body.y, body.width - left_w - gap, body.height)
+
+    ramp_h = int(left.height * 0.72)
+    ramp_rect = pygame.Rect(left.x, left.y, left.width, ramp_h)
+    inj_rect = pygame.Rect(left.x, left.y + ramp_h + gap, left.width, left.height - ramp_h - gap)
+    boost_psi = (data["map_kpa"] - 101.3) * 0.145038
+    draw_left_ramp(surface, ramp_rect, data["rpm"], data["map_kpa"], boost_psi, fonts)
+    draw_data_box(
+        surface,
+        inj_rect,
+        "Injector Duty (Magneti)",
+        data["engine_load"],
+        "%",
+        fonts,
+        COL_ORANGE,
+        ratio=data["engine_load"] / 100.0,
+        decimals=2,
+        red_theme=True,
+    )
+
+    afr_target = clamp(14.7 - (data["throttle"] / 100.0) * 2.8, 11.2, 14.7)
+    afr_error = ((data["engine_load"] - 45.0) / 45.0) * 3.0
+    fuel_rail = 30.0 + data["map_kpa"] * 0.12
+
+    cols, rows = 2, 2
+    card_w = int((right.width - gap) / cols)
+    card_h = int((right.height - gap) / rows)
+    cards = [
+        ("Manifold Air Temp", data["intake_temp"], "(C)", temp_color(data["intake_temp"]), data["intake_temp"] / 80.0, 1),
+        ("Coolant Temp", data["coolant_temp"], "(C)", temp_color(data["coolant_temp"]), data["coolant_temp"] / 120.0, 1),
+        ("AFR 1 Target", afr_target, "", COL_CYAN, (afr_target - 10.0) / 5.0, 2),
+        ("AFR 1 Error", afr_error, "", COL_CYAN, clamp((afr_error + 5.0) / 10.0, 0, 1), 2),
+    ]
+
+    idx = 0
+    for row in range(rows):
+        for col in range(cols):
+            r = pygame.Rect(
+                right.x + col * (card_w + gap),
+                right.y + row * (card_h + gap),
+                card_w,
+                card_h,
+            )
+            label, value, unit, color, ratio, decimals = cards[idx]
+            draw_data_box(surface, r, label, value, unit, fonts, color, ratio=ratio, decimals=decimals)
+            idx += 1
+
+    draw_text_center(surface, fonts["small"], f"Fuel Rail {format_num(fuel_rail, 2)} psi", COL_SUB, outer.right - 120, outer.bottom - 10)
+    draw_text_center(surface, fonts["small"], f"FPS {int(fps)}", COL_SUB, outer.right - 28, header.centery - 1)
 
 
 def main():
@@ -440,13 +469,13 @@ def main():
 
     scale = canvas_h / 440.0
     fonts = {
-        "tile_label": pygame.font.SysFont("dejavusansmono", max(10, int(13 * scale)), bold=True),
-        "tile_value": pygame.font.SysFont("dejavusansmono", max(22, int(52 * scale)), bold=True),
+        "tile_label": pygame.font.SysFont("dejavusansmono", max(9, int(11 * scale)), bold=True),
+        "tile_value": pygame.font.SysFont("dejavusansmono", max(20, int(48 * scale)), bold=True),
         "tile_unit": pygame.font.SysFont("dejavusansmono", max(9, int(12 * scale))),
-        "box_label": pygame.font.SysFont("dejavusansmono", max(9, int(11 * scale)), bold=True),
-        "box_value": pygame.font.SysFont("dejavusansmono", max(13, int(32 * scale)), bold=True),
+        "box_label": pygame.font.SysFont("dejavusansmono", max(8, int(10 * scale)), bold=True),
+        "box_value": pygame.font.SysFont("dejavusansmono", max(12, int(30 * scale)), bold=True),
         "box_unit": pygame.font.SysFont("dejavusansmono", max(9, int(11 * scale))),
-        "ramp_value": pygame.font.SysFont("dejavusansmono", max(13, int(36 * scale)), bold=True),
+        "ramp_value": pygame.font.SysFont("dejavusansmono", max(13, int(34 * scale)), bold=True),
         "small": pygame.font.SysFont("dejavusansmono", max(9, int(11 * scale))),
         "tick": pygame.font.SysFont("dejavusansmono", max(8, int(10 * scale))),
     }
